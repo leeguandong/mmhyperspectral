@@ -10,9 +10,9 @@ import mmcv
 from mmcv import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
 from mmhyperspectralcls import __version__
-from mmhyperspectralcls.apis import set_random_seed, train_model
+from mmhyperspectralcls.apis import set_random_seed
 from mmhyperspectralcls.datasets import build_dataset
-from mmhyperspectralcls.models import build_classifier
+# from mmhyperspectralcls.models import build_classifier
 from mmhyperspectralcls.utils import collect_env, get_root_logger
 
 
@@ -20,11 +20,11 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a model')
     parser.add_argument(
         '--config',
-        default="../app/swin_transformer_base_224.py",
+        default="../configs/ssrn/ssrn_in.py",
         help='train config file path')
     parser.add_argument(
         '--work-dir',
-        default="../output/swin_transformer_test",
+        default="../output/results",
         help='the dir to save logs and models')
     parser.add_argument(
         '--resume-from',
@@ -144,9 +144,9 @@ def main():
     cfg.seed = args.seed
     meta['seed'] = args.seed
 
-    model = build_classifier(cfg.model)
-    model.init_weights()
-    datasets = [build_dataset(cfg.data.train)]
+    # model = build_classifier(cfg.model)
+    # model.init_weights()
+    datasets = build_dataset(cfg.data.train).train_dataset
 
     if len(cfg.workflow) == 2:
         val_dataset = copy.deepcopy(cfg.data.val)
@@ -158,16 +158,16 @@ def main():
             config=cfg.pretty_text,
             CLASSES=datasets[0].CLASSES)
 
-    # add an attribute for visualization convenience
-    train_model(
-        model,
-        datasets,
-        cfg,
-        distributed=distributed,
-        validate=(not args.no_validate),
-        timestamp=timestamp,
-        device='cpu' if args.device == 'cpu' else 'cuda',
-        meta=meta)
+        # add an attribute for visualization convenience
+        # train_model(
+        #     model,
+        #     datasets,
+        #     cfg,
+        #     distributed=distributed,
+        #     validate=(not args.no_validate),
+        #     timestamp=timestamp,
+        #     device='cpu' if args.device == 'cpu' else 'cuda',
+        #     meta=meta)
 
 
 if __name__ == '__main__':
