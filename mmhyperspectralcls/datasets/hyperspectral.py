@@ -54,3 +54,12 @@ class HyperSpectral:
 
     def prepare_data(self):
         return self.pipeline(self.data_infos)
+
+    def train_dataset(self):
+        pass
+
+    def val_dataset(self):
+        pass
+
+    def test_dataset(self):
+        pass

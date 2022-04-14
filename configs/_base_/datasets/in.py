@@ -1,7 +1,9 @@
 dataset_type = 'HyperSpectral'
 
 train_pipeline = [
-    # dict(),
+    dict(type='Scale'),
+    dict(type='Pad', patch=5),
+    dict(type='Sampling', ratio=0.1),
 
 ]
 
@@ -16,4 +18,3 @@ data = dict(
         total_size=10249,
         split_ratio=0.1,
         pipeline=train_pipeline))
-
