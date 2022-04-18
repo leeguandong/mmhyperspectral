@@ -1,5 +1,9 @@
 dataset_type = 'HyperSpectral'
-train_pipeline = []
+train_pipeline = [
+    dict(type='Scale'),
+    dict(type='Pad', patch=5),
+    dict(type='Sampling', ratio=0.1)
+]
 data = dict(
     samples_per_gpu=2,
     workers_per_gpu=0,
@@ -7,12 +11,16 @@ data = dict(
         type='HyperSpectral',
         manner='IN',
         data_prefix=
-        'G:/git_leeguandong/mmhyperspectralcls/data/IN/Indian_pines_corrected.mat',
+        'G:/git_leeguandong/mmhyperspectral/data/IN/Indian_pines_corrected.mat',
         data_gt=
-        'G:/git_leeguandong/mmhyperspectralcls/data/IN/Indian_pines_gt.mat',
+        'G:/git_leeguandong/mmhyperspectral/data/IN/Indian_pines_gt.mat',
         total_size=10249,
         split_ratio=0.1,
-        pipeline=[]))
+        pipeline=[
+            dict(type='Scale'),
+            dict(type='Pad', patch=5),
+            dict(type='Sampling', ratio=0.1)
+        ]))
 checkpoint_config = dict(interval=10)
 log_config = dict(
     interval=100,

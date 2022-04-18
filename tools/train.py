@@ -9,11 +9,11 @@ import torch
 import mmcv
 from mmcv import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
-from mmhyperspectralcls import __version__
-from mmhyperspectralcls.apis import set_random_seed
-from mmhyperspectralcls.datasets import build_dataset
-# from mmhyperspectralcls.models import build_classifier
-from mmhyperspectralcls.utils import collect_env, get_root_logger
+from mmhyperspectral import __version__
+from mmhyperspectral.apis import set_random_seed
+from mmhyperspectral.datasets import build_dataset
+# from mmhyperspectral.models import build_classifier
+from mmhyperspectral.utils import collect_env, get_root_logger
 
 
 def parse_args():
