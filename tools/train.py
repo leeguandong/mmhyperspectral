@@ -144,14 +144,12 @@ def main():
     cfg.seed = args.seed
     meta['seed'] = args.seed
 
-    # model = build_classifier(cfg.model)
-    # model.init_weights()
-    datasets = build_dataset(cfg.data.train).train_dataset
-
+    model = build_classifier(cfg.model)
+    model.init_weights()
+    base_dataset = build_dataset(cfg.data.train)
+    datasets = [base_dataset.train_dataset]
     if len(cfg.workflow) == 2:
-        val_dataset = copy.deepcopy(cfg.data.val)
-        val_dataset.pipeline = cfg.data.train.pipeline
-        datasets.append(build_dataset(val_dataset))
+        datasets.append(base_dataset.val_dataset)
     if cfg.checkpoint_config is not None:
         cfg.checkpoint_config.meta = dict(
             mmcls_version=__version__,

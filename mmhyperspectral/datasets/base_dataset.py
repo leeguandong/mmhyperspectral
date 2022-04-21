@@ -1,11 +1,8 @@
 import copy
 import numpy as np
 from torch.utils.data import Dataset
-
 from mmhyperspectral.core.evaluation import precision_recall_f1, support
-
-
-# from mmhyperspectralcls.models.losses import accuracy
+from mmhyperspectral.models.losses import accuracy
 
 
 class BaseDataset(Dataset):

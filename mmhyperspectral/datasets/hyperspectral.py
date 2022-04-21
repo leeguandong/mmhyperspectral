@@ -1,6 +1,7 @@
 import scipy.io as sio
 from .pipelines import Compose
 from .builder import DATASETS
+from .base_dataset import BaseDataset
 
 
 @DATASETS.register_module()
@@ -16,10 +17,11 @@ class HyperSpectral:
         self.pipeline = Compose(pipeline)
 
         self.data_infos = self.load_annotations()
-        self.data_infos = self.prepare_data()
+        self.train, self.val, self.test, self.total = self.prepare_data()
         self.train_dataset = self.train_dataset(self.train)
         self.val_dataset = self.val_dataset(self.val)
         self.test_dataset = self.test_dataset(self.test)
+        self.dataset = self.dataset(self.total)
 
     def load_annotations(self):
         mat_data = sio.loadmat(self.data_prefix)
@@ -51,14 +53,26 @@ class HyperSpectral:
     def prepare_data(self):
         return self.pipeline(self.data_infos)
 
-    def train_dataset(self):
-        pass
+    def train_dataset(self, train_data):
+        train_hsi = train_data.get('train_hsi', None)
+        gt_train = train_data.get('gt_train', None)
+        train_dataset = BaseDataset(train_hsi, gt_train)
+        return train_dataset
 
-    def val_dataset(self):
-        pass
+    def val_dataset(self, val_data):
+        val_hsi = val_data.get('val_hsi', None)
+        gt_val = val_data.get('gt_val', None)
+        val_dataset = BaseDataset(val_hsi, gt_val)
+        return val_dataset
 
-    def test_dataset(self):
-        pass
+    def test_dataset(self, test_data):
+        test_hsi = test_data.get('test_hsi', None)
+        gt_test = test_data.get('gt_test', None)
+        test_dataset = BaseDataset(test_hsi, gt_test)
+        return test_dataset
 
-    def dataset(self):
-        pass
+    def dataset(self, hsi_data):
+        hsi = hsi_data.get('hsi', None)
+        gt_hsi = hsi_data.get('gt_hsi', None)
+        dataset = BaseDataset(hsi, gt_hsi)
+        return dataset
