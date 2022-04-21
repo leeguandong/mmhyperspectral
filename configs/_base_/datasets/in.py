@@ -4,7 +4,7 @@ train_pipeline = [
     dict(type='Scale'),
     dict(type='Pad', patch=5),
     dict(type='Sampling', ratio=0.1),
-
+    dict(type='ExtractPatch'),
 ]
 
 data = dict(

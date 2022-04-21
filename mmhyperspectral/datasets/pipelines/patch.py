@@ -7,7 +7,7 @@ from ..builder import PIPELINES
 @PIPELINES.register_module()
 class ExtractPatch:
     def __init__(self):
-        pass
+        self.val_ratio = 0.1
 
     def index_assignment(self, hsi_indexes, col, patch):
         new_assign = {}
@@ -34,24 +34,35 @@ class ExtractPatch:
         test_indexes = data_infos.get('test_indexes', None)
         total_indexes = data_infos.get('total_indexes', None)
         input_dimension = hsi.shape[-1]
+
         total_size = len(total_indexes)
         train_size = len(train_indexes)
         test_size = len(test_indexes)
-        val_size = train_size - test_size
+        val_size = int(total_size * self.val_ratio)
 
-        gt_ = gt[total_indexes] - 1
+        gt_hsi = gt[total_indexes] - 1
+        gt_test_ = gt[test_indexes] - 1
         gt_train = gt[train_indexes] - 1
-        gt_test = gt[test_indexes] - 1
+        gt_val = gt_test_[-val_size:]
+        gt_test = gt_test_[:-val_size]
 
         hsi_ = self.select_patch(total_size, total_indexes, hsi, patch, pad_hsi, input_dimension)
-        train_hsi = self.select_patch(train_size, train_indexes, hsi, patch, pad_hsi, input_dimension)
         test_hsi_ = self.select_patch(test_size, test_indexes, hsi, patch, pad_hsi, input_dimension)
-
+        train_hsi = self.select_patch(train_size, train_indexes, hsi, patch, pad_hsi, input_dimension)
         val_hsi = test_hsi_[-val_size:]
-        gt_val = gt_test[-val_size:]
-
         test_hsi = test_hsi_[:-val_size]
-        gt_test = gt_test[:-val_size]
 
         train_hsi = torch.from_numpy(train_hsi).type(torch.FloatTensor).unsqueeze(1)
-        gt_train = torch.FloatTensor()
+        gt_train = torch.from_numpy(gt_train).type(torch.FloatTensor)
+
+        val_hsi = torch.from_numpy(val_hsi).type(torch.FloatTensor).unsqueeze(1)
+        gt_val = torch.from_numpy(gt_val).type(torch.FloatTensor)
+
+        test_hsi = torch.from_numpy(test_hsi).type(torch.FloatTensor).unsqueeze(1)
+        gt_test = torch.from_numpy(gt_test).type(torch.FloatTensor)
+
+        hsi_ = torch.from_numpy(hsi_).type(torch.FloatTensor).unsqueeze(1)
+        gt_hsi = torch.from_numpy(gt_hsi).type(torch.FloatTensor)
+
+        return {'train_hsi': train_hsi, 'gt_train': gt_train}, {'val_hsi': val_hsi, 'gt_val': gt_val}, {
+            'test_hsi': test_hsi, 'gt_test': gt_test}, {'hsi': hsi_, 'gt_hsi': gt_hsi}
