@@ -1,4 +1,0 @@
-model = dict(
-    type='ImageClassifier',
-
-)

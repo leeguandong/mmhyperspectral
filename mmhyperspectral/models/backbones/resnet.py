@@ -473,13 +473,13 @@ class ResNet(BaseBackbone):
                  deep_stem=False,
                  avg_down=False,
                  frozen_stages=-1,
-                 conv_cfg=None,
+                 conv_cfg=dict(type='Conv3d'),
                  norm_cfg=dict(type='BN', requires_grad=True),
                  norm_eval=False,
                  with_cp=False,
                  zero_init_residual=True,
                  init_cfg=[
-                     dict(type='Kaiming', layer=['Conv2d']),
+                     dict(type='Kaiming', layer=['Conv3d']),
                      dict(
                          type='Constant',
                          val=1,

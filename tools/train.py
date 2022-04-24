@@ -12,7 +12,7 @@ from mmcv.runner import get_dist_info, init_dist
 from mmhyperspectral import __version__
 from mmhyperspectral.apis import set_random_seed
 from mmhyperspectral.datasets import build_dataset
-# from mmhyperspectral.models import build_classifier
+from mmhyperspectral.models import build_classifier
 from mmhyperspectral.utils import collect_env, get_root_logger
 
 
@@ -156,16 +156,16 @@ def main():
             config=cfg.pretty_text,
             CLASSES=datasets[0].CLASSES)
 
-        # add an attribute for visualization convenience
-        # train_model(
-        #     model,
-        #     datasets,
-        #     cfg,
-        #     distributed=distributed,
-        #     validate=(not args.no_validate),
-        #     timestamp=timestamp,
-        #     device='cpu' if args.device == 'cpu' else 'cuda',
-        #     meta=meta)
+    # add an attribute for visualization convenience
+    train_model(
+        model,
+        datasets,
+        cfg,
+        distributed=distributed,
+        validate=(not args.no_validate),
+        timestamp=timestamp,
+        device='cpu' if args.device == 'cpu' else 'cuda',
+        meta=meta)
 
 
 if __name__ == '__main__':
