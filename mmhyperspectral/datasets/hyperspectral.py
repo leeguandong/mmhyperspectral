@@ -1,4 +1,6 @@
 import scipy.io as sio
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
+
 from .pipelines import Compose
 from .builder import DATASETS
 from .base_dataset import BaseDataset
@@ -7,10 +9,10 @@ from .base_dataset import BaseDataset
 @DATASETS.register_module()
 class HyperSpectral:
     def __init__(self,
-                 manner,
-                 data_prefix,
-                 data_gt,
-                 pipeline):
+                 manner: str = 'IN',
+                 data_prefix: str = None,
+                 data_gt: str = None,
+                 pipeline: Sequence = ()):
         self.manner = manner
         self.data_prefix = data_prefix
         self.data_gt = data_gt

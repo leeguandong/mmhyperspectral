@@ -10,7 +10,7 @@ import mmcv
 from mmcv import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
 from mmhyperspectral import __version__
-from mmhyperspectral.apis import set_random_seed
+from mmhyperspectral.apis import set_random_seed,train_model
 from mmhyperspectral.datasets import build_dataset
 from mmhyperspectral.models import build_classifier
 from mmhyperspectral.utils import collect_env, get_root_logger
@@ -20,7 +20,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train a model')
     parser.add_argument(
         '--config',
-        default="../configs/ssrn/ssrn_in.py",
+        default="../configs/resnet/resnet50_in.py",
         help='train config file path')
     parser.add_argument(
         '--work-dir',
