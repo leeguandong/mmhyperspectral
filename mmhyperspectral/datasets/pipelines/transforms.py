@@ -12,11 +12,12 @@ class Scale:
     def __call__(self, data_infos):
         hsi = data_infos.get('hsi', None)
         gt = data_infos.get('gt', None)
-        hsi = hsi.reshape(np.prod(hsi.shape[:2]), np.prod(hsi.shape[2:]))
-        gt = gt.reshape(np.prod(gt.shape[:2]), )
 
-        hsi = preprocessing.scale(hsi)
-        hsi = hsi.reshape(hsi.shape[0], hsi.shape[1], hsi.shape[2])
+        hsi_ = hsi.reshape(np.prod(hsi.shape[:2]), np.prod(hsi.shape[2:]))
+        gt_ = gt.reshape(np.prod(gt.shape[:2]), )
+        hsi_scale = preprocessing.scale(hsi_)
+
+        hsi = hsi_scale.reshape(hsi.shape[0], hsi.shape[1], hsi.shape[2])
         return {"hsi": hsi, "gt": gt}
 
 
@@ -30,7 +31,9 @@ class Pad:
         gt = data_infos.get('gt', None)
         pad_hsi = np.lib.pad(hsi, ((self.patch, self.patch), (self.patch, self.patch),
                                    (0, 0)), 'constant', constant_values=0)
-        return {'hsi': hsi, 'pad_hsi': pad_hsi, 'gt': gt, 'patch': self.patch}
+        # return {'hsi': hsi, 'pad_hsi': pad_hsi, 'gt': gt, 'patch': self.patch}
+        data_infos.update({'pad_hsi': pad_hsi})
+        return data_infos
 
 
 @PIPELINES.register_module()
