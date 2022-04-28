@@ -28,12 +28,13 @@ class ExtractPatch:
     def __call__(self, data_infos):
         hsi = data_infos.get('hsi', None)
         pad_hsi = data_infos.get('pad_hsi', None)
-        gt = data_infos.get('gt', None)
+        gt_ = data_infos.get('gt', None)
         patch = data_infos.get('patch', None)
         train_indexes = data_infos.get('train_indexes', None)
         test_indexes = data_infos.get('test_indexes', None)
         total_indexes = data_infos.get('total_indexes', None)
         input_dimension = hsi.shape[-1]
+        gt = gt_.reshape(np.prod(gt_.shape[:2]), )
 
         total_size = len(total_indexes)
         train_size = len(train_indexes)

@@ -14,7 +14,7 @@ class Scale:
         gt = data_infos.get('gt', None)
 
         hsi_ = hsi.reshape(np.prod(hsi.shape[:2]), np.prod(hsi.shape[2:]))
-        gt_ = gt.reshape(np.prod(gt.shape[:2]), )
+        # gt_ = gt.reshape(np.prod(gt.shape[:2]), )
         hsi_scale = preprocessing.scale(hsi_)
 
         hsi = hsi_scale.reshape(hsi.shape[0], hsi.shape[1], hsi.shape[2])
@@ -31,8 +31,8 @@ class Pad:
         gt = data_infos.get('gt', None)
         pad_hsi = np.lib.pad(hsi, ((self.patch, self.patch), (self.patch, self.patch),
                                    (0, 0)), 'constant', constant_values=0)
-        # return {'hsi': hsi, 'pad_hsi': pad_hsi, 'gt': gt, 'patch': self.patch}
         data_infos.update({'pad_hsi': pad_hsi})
+        data_infos.update({'patch': self.patch})
         return data_infos
 
 
@@ -42,8 +42,10 @@ class Sampling:
         self.ratio = ratio
 
     def __call__(self, data_infos):
-        self.logger = get_root_logger(log_level="INFO")
-        gt = data_infos.get('gt', None)
+        self.logger = get_root_logger()
+        gt_ = data_infos.get('gt', None)
+        gt = gt_.reshape(np.prod(gt_.shape[:2]), )
+
         train = {}
         test = {}
         total = {}
@@ -70,8 +72,10 @@ class Sampling:
         np.random.shuffle(total_indexes)
 
         self.logger.info(f"Train size:{len(train_indexes)},"
-                         f"Val size:{int(total_indexes*self.ratio)},"
-                         f"Test size:{total_indexes-train_indexes}")
+                         f"Val size:{int(len(total_indexes)*self.ratio)},"
+                         f"Test size:{len(total_indexes)-len(train_indexes)}")
 
-        return {"hsi": data_infos['hsi'], 'pad_hsi': data_infos['pad_hsi'], 'gt': gt, 'patch': data_infos['patch'],
-                'train_indexes': train_indexes, 'test_indexes': test_indexes, 'total_indexes': total_indexes}
+        data_infos.update({'train_indexes': train_indexes})
+        data_infos.update({'test_indexes': test_indexes})
+        data_infos.update({'total_indexes': total_indexes})
+        return data_infos
