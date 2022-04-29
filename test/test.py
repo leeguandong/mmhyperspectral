@@ -7,5 +7,15 @@ class A():
 
 
 # A()()
-a = [1, 2, 3, 4, 5, 6]
-print(a[:-2])
+# a = [1, 2, 3, 4, 5, 6]
+# print(a[:-2])
+
+import torch
+
+a = torch.Tensor([1, 2, 3, 4, 5, 6, 1, 2, 4, 5, 3, 4])
+b = torch.unique(a)
+
+print(a)
+print(b)
+
+pass

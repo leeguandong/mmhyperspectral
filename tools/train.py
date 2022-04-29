@@ -152,7 +152,7 @@ def main():
         datasets.append(base_dataset.val_dataset)
     if cfg.checkpoint_config is not None:
         cfg.checkpoint_config.meta = dict(
-            mmcls_version=__version__,
+            mmhyperspectral_version=__version__,
             config=cfg.pretty_text,
             CLASSES=datasets[0].CLASSES)
 

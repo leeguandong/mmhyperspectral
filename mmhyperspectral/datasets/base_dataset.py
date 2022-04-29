@@ -1,4 +1,5 @@
 import copy
+import torch
 import numpy as np
 from torch.utils.data import Dataset
 from mmhyperspectral.core.evaluation import precision_recall_f1, support
@@ -9,6 +10,7 @@ class BaseDataset(Dataset):
     def __init__(self, *tensors):
         assert all(tensors[0].size(0) == tensor.size(0) for tensor in tensors)
         self.tensors = tensors
+        self.CLASSES = torch.unique(tensors[1])
 
     def __len__(self):
         return self.tensors[0].size(0)
