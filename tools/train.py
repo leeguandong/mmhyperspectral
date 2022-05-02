@@ -10,7 +10,7 @@ import mmcv
 from mmcv import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
 from mmhyperspectral import __version__
-from mmhyperspectral.apis import set_random_seed,train_model
+from mmhyperspectral.apis import set_random_seed, train_model
 from mmhyperspectral.datasets import build_dataset
 from mmhyperspectral.models import build_classifier
 from mmhyperspectral.utils import collect_env, get_root_logger
@@ -19,60 +19,43 @@ from mmhyperspectral.utils import collect_env, get_root_logger
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a model')
     parser.add_argument(
-        '--config',
-        default="../configs/resnet/resnet50_in.py",
+        '--config', default="../configs/resnet/resnet50_in.py",
         help='train config file path')
     parser.add_argument(
-        '--work-dir',
-        default="../output/results",
+        '--work-dir', default="../results",
         help='the dir to save logs and models')
     parser.add_argument(
-        '--resume-from',
-        help='the checkpoint file to resume from')
+        '--resume-from', help='the checkpoint file to resume from')
     parser.add_argument(
-        '--no-validate',
-        default=False,
+        '--no-validate', default=False,
         help='whether not to evaluate the checkpoint during training')
     group_gpus = parser.add_mutually_exclusive_group()
     group_gpus.add_argument(
-        '--device',
-        default="cpu",
+        '--device', default="cpu",
         help='device used for training')
     group_gpus.add_argument(
-        '--gpus',
-        type=int,
+        '--gpus', type=int,
         help='number of gpus to use (only applicable to non-distributed training)')
     group_gpus.add_argument(
-        '--gpu-ids',
-        type=int,
-        nargs='+',
+        '--gpu-ids', type=int, nargs='+',
         help='ids of gpus to use  (only applicable to non-distributed training)')
     parser.add_argument(
-        '--seed',
-        type=int,
-        default=2021,
+        '--seed', type=int, default=2021,
         help='random seed')
     parser.add_argument(
-        '--deterministic',
-        action='store_true',
+        '--deterministic', action='store_true',
         help='whether to set deterministic options for CUDNN backend.')
     parser.add_argument(
-        '--options',
-        nargs='+',
-        action=DictAction,
+        '--options', nargs='+', action=DictAction,
         help='arguments in dict')
     parser.add_argument(
-        '--launcher',
-        choices=['none', 'pytorch', 'slurm', 'mpi'],
+        '--launcher', choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
     parser.add_argument(
-        '--local_rank',
-        type=int,
-        default=0)
+        '--local_rank', type=int, default=0)
     parser.add_argument(
-        '--autoscale-lr',
-        action='store_true',
+        '--autoscale-lr', action='store_true',
         help='automatically scale lr with the number of gpus')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
@@ -144,6 +127,7 @@ def main():
     cfg.seed = args.seed
     meta['seed'] = args.seed
 
+    # for index_
     model = build_classifier(cfg.model)
     model.init_weights()
     base_dataset = build_dataset(cfg.data.train)
@@ -166,6 +150,13 @@ def main():
         timestamp=timestamp,
         device='cpu' if args.device == 'cpu' else 'cuda',
         meta=meta)
+
+    # 加载模型来处理，把test的方法加载到这里来处理，不用把数据存储一份，
+    pass
+
+record_output()
+
+
 
 
 if __name__ == '__main__':

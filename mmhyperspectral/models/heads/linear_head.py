@@ -40,7 +40,7 @@ class LinearClsHead(ClsHead):
             x = x[-1]
         return x
 
-    def simple_test(self, x, softmax=True, post_process=True):
+    def simple_test(self, x, softmax=True, post_process=True, **kwargs):
         """Inference without augmentation.
 
         Args:

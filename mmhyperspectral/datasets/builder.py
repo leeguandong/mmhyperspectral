@@ -40,7 +40,6 @@ def build_dataloader(dataset,
                      seed=None,
                      pin_memory=True,
                      persistent_workers=True,
-                     sampler_cfg=None,
                      **kwargs):
     """Build PyTorch DataLoader.
 
@@ -66,46 +65,20 @@ def build_dataloader(dataset,
             This allows to maintain the workers Dataset instances alive.
             The argument also has effect in PyTorch>=1.7.0.
             Default: True
-        sampler_cfg (dict): sampler configuration to override the default
-            sampler
         kwargs: any keyword argument to be used to initialize DataLoader
 
     Returns:
         DataLoader: A PyTorch dataloader.
     """
     rank, world_size = get_dist_info()
-
-    # Custom sampler logic
-    if sampler_cfg:
-        # shuffle=False when val and test
-        sampler_cfg.update(shuffle=shuffle)
-        sampler = build_sampler(
-            sampler_cfg,
-            default_args=dict(
-                dataset=dataset, num_replicas=world_size, rank=rank,
-                seed=seed))
-    # Default sampler logic
-    elif dist:
-        sampler = build_sampler(
-            dict(
-                type='DistributedSampler',
-                dataset=dataset,
-                num_replicas=world_size,
-                rank=rank,
-                shuffle=shuffle,
-                round_up=round_up,
-                seed=seed))
-    else:
-        sampler = None
-
-    # If sampler exists, turn off dataloader shuffle
-    if sampler is not None:
-        shuffle = False
-
     if dist:
+        sampler = DistributedSampler(
+            dataset, world_size, rank, shuffle=shuffle, round_up=round_up)
+        shuffle = False
         batch_size = samples_per_gpu
         num_workers = workers_per_gpu
     else:
+        sampler = None
         batch_size = num_gpus * samples_per_gpu
         num_workers = num_gpus * workers_per_gpu
 
@@ -113,7 +86,7 @@ def build_dataloader(dataset,
         worker_init_fn, num_workers=num_workers, rank=rank,
         seed=seed) if seed is not None else None
 
-    if digit_version(torch.__version__) >= digit_version('1.8.0'):
+    if LooseVersion(torch.__version__) >= LooseVersion('1.7.0'):
         kwargs['persistent_workers'] = persistent_workers
 
     data_loader = DataLoader(
@@ -136,11 +109,3 @@ def worker_init_fn(worker_id, num_workers, rank, seed):
     worker_seed = num_workers * rank + worker_id + seed
     np.random.seed(worker_seed)
     random.seed(worker_seed)
-    torch.manual_seed(worker_seed)
-
-
-def build_sampler(cfg, default_args=None):
-    if cfg is None:
-        return None
-    else:
-        return build_from_cfg(cfg, SAMPLERS, default_args=default_args)

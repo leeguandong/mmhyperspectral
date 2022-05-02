@@ -7,19 +7,22 @@ from mmhyperspectral.models.losses import accuracy
 
 
 class BaseDataset(Dataset):
-    def __init__(self, *tensors):
+    def __init__(self,  *tensors):
         assert all(tensors[0].size(0) == tensor.size(0) for tensor in tensors)
         self.tensors = tensors
-        self.CLASSES = torch.unique(tensors[1])
+        self.CLASSES = torch.unique(tensors[1]).numpy().tolist()
 
     def __len__(self):
         return self.tensors[0].size(0)
 
     def __getitem__(self, idx):
-        return tuple(tensor[idx] for tensor in self.tensors)
+        hsi_label = tuple(tensor[idx] for tensor in self.tensors)
+        data = {'img': hsi_label[0], 'gt_label': hsi_label[1].long()}
+        return data
 
     def get_gt_labels(self):
-        gt_labels = np.array([data[1] for data in self.tensors])
+        # gt_labels = np.array([data[1] for data in self.tensors])
+        gt_labels = self.tensors[1].numpy()
         return gt_labels
 
     def evaluate(self,

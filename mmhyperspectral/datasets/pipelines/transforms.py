@@ -5,7 +5,7 @@ from ..builder import PIPELINES
 
 
 @PIPELINES.register_module()
-class Scale:
+class Normalize:
     def __init__(self):
         pass
 
@@ -14,7 +14,6 @@ class Scale:
         gt = data_infos.get('gt', None)
 
         hsi_ = hsi.reshape(np.prod(hsi.shape[:2]), np.prod(hsi.shape[2:]))
-        # gt_ = gt.reshape(np.prod(gt.shape[:2]), )
         hsi_scale = preprocessing.scale(hsi_)
 
         hsi = hsi_scale.reshape(hsi.shape[0], hsi.shape[1], hsi.shape[2])

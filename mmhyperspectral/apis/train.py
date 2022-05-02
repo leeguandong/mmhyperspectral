@@ -80,8 +80,6 @@ def train_model(model,
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
 
-    sampler_cfg = cfg.data.get('sampler', None)
-
     data_loaders = [
         build_dataloader(
             ds,
@@ -91,9 +89,8 @@ def train_model(model,
             num_gpus=len(cfg.gpu_ids),
             dist=distributed,
             round_up=True,
-            seed=cfg.seed,
-            sampler_cfg=sampler_cfg) for ds in dataset
-        ]
+            seed=cfg.seed) for ds in dataset
+    ]
 
     # put model on gpus
     if distributed:
@@ -107,10 +104,6 @@ def train_model(model,
             find_unused_parameters=find_unused_parameters)
     else:
         if device == 'cpu':
-            warnings.warn(
-                'The argument `device` is deprecated. To use cpu to train, '
-                'please refers to https://mmclassification.readthedocs.io/en'
-                '/latest/getting_started.html#train-a-model')
             model = model.cpu()
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
@@ -168,7 +161,8 @@ def train_model(model,
 
     # register eval hooks
     if validate:
-        val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
+        # val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
+        val_dataset = dataset[1]
         val_dataloader = build_dataloader(
             val_dataset,
             samples_per_gpu=cfg.data.samples_per_gpu,
@@ -179,9 +173,6 @@ def train_model(model,
         eval_cfg = cfg.get('evaluation', {})
         eval_cfg['by_epoch'] = cfg.runner['type'] != 'IterBasedRunner'
         eval_hook = DistEvalHook if distributed else EvalHook
-        # `EvalHook` needs to be executed after `IterTimerHook`.
-        # Otherwise, it will cause a bug if use `IterBasedRunner`.
-        # Refers to https://github.com/open-mmlab/mmcv/issues/1261
         runner.register_hook(
             eval_hook(val_dataloader, **eval_cfg), priority='LOW')
 

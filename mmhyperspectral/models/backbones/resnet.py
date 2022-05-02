@@ -356,7 +356,7 @@ class ResLayer(nn.Sequential):
             if avg_down and stride != 1:
                 conv_stride = 1
                 downsample.append(
-                    nn.AvgPool2d(
+                    nn.AvgPool3d(
                         kernel_size=stride,
                         stride=stride,
                         ceil_mode=True,
@@ -474,7 +474,7 @@ class ResNet(BaseBackbone):
                  avg_down=False,
                  frozen_stages=-1,
                  conv_cfg=dict(type='Conv3d'),
-                 norm_cfg=dict(type='BN', requires_grad=True),
+                 norm_cfg=dict(type='BN3d', requires_grad=True),
                  norm_eval=False,
                  with_cp=False,
                  zero_init_residual=True,
@@ -483,7 +483,7 @@ class ResNet(BaseBackbone):
                      dict(
                          type='Constant',
                          val=1,
-                         layer=['_BatchNorm', 'GroupNorm'])
+                         layer=['_BatchNorm3d', 'GroupNorm3d'])
                  ],
                  drop_path_rate=0.0):
         super(ResNet, self).__init__(init_cfg)
@@ -594,7 +594,7 @@ class ResNet(BaseBackbone):
                 self.norm_cfg, stem_channels, postfix=1)
             self.add_module(self.norm1_name, norm1)
             self.relu = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.maxpool = nn.MaxPool3d(kernel_size=3, stride=2, padding=1)
 
     def _freeze_stages(self):
         if self.frozen_stages >= 0:

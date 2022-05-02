@@ -74,7 +74,7 @@ class ClsHead(BaseHead):
         )
         return x
 
-    def simple_test(self, cls_score, softmax=True, post_process=True):
+    def simple_test(self, cls_score, softmax=True, post_process=True,**kwargs):
         """Inference without augmentation.
 
         Args:

@@ -1,7 +1,9 @@
 from .patch import ExtractPatch
 from .compose import Compose
-from .transforms import Scale, Pad, Sampling
+from .transforms import Normalize, Pad, Sampling
+from .formating import ToTensor, ImageToTensor, Collect
 
 __all__ = [
-    "Compose", 'Scale', 'Pad', 'Sampling', 'ExtractPatch'
+    "Compose", 'Normalize', 'Pad', 'Sampling', 'ExtractPatch',
+    'ToTensor', 'ImageToTensor', 'Collect'
 ]
