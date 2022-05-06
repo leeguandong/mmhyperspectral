@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
+from mmcv.runner import (load_checkpoint, DistSamplerSeedHook, Fp16OptimizerHook,
                          build_optimizer, build_runner, get_dist_info)
 from mmcv.runner.hooks import DistEvalHook, EvalHook
 
@@ -90,7 +90,7 @@ def train_model(model,
             dist=distributed,
             round_up=True,
             seed=cfg.seed) for ds in dataset
-    ]
+        ]
 
     # put model on gpus
     if distributed:
@@ -181,3 +181,31 @@ def train_model(model,
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
     runner.run(data_loaders, cfg.workflow)
+
+
+def test_model(model,
+               test_dataset,
+               total_dataset,
+               total_indexes,
+               cfg):
+    checkpoint = load_checkpoint(model, cfg.work_dir + 'latest.pth', map_location='cpu')
+
+    dataset = [test_dataset, total_dataset]
+
+    data_loaders = [
+        build_dataloader(
+            ds,
+            cfg.data.samples_per_gpu,
+            cfg.data.workers_per_gpu,
+            # cfg.gpus will be ignored if distributed
+            num_gpus=len(cfg.gpu_ids),
+            dist=False,
+            round_up=True,
+            seed=cfg.seed) for ds in dataset
+        ]
+
+    pred_test = []
+    with torch.no_grad():
+        for hsi, gt in data_loaders[0]:
+            model.eval()
+            pred = model(hsi)

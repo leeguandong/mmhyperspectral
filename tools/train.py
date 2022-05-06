@@ -10,7 +10,7 @@ import mmcv
 from mmcv import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
 from mmhyperspectral import __version__
-from mmhyperspectral.apis import set_random_seed, train_model
+from mmhyperspectral.apis import set_random_seed, train_model, test_model
 from mmhyperspectral.datasets import build_dataset
 from mmhyperspectral.models import build_classifier
 from mmhyperspectral.utils import collect_env, get_root_logger
@@ -119,44 +119,50 @@ def main():
     logger.info(f'Distributed training: {distributed}')
     logger.info(f'Config:\n{cfg.pretty_text}')
 
-    # set random seeds
-    if args.seed is not None:
-        logger.info(f'Set random seed to {args.seed}, '
-                    f'deterministic: {args.deterministic}')
-        set_random_seed(args.seed, deterministic=args.deterministic)
-    cfg.seed = args.seed
-    meta['seed'] = args.seed
+    seed = [seed_value for seed_value in range(args.seed, args.seed + args.iter)]
+    for index_iter in range(cfg.iter):
+        # set random seeds
+        if seed[index_iter] is not None:
+            logger.info(f'Set random seed to {seed[index_iter]}, '
+                        f'deterministic: {args.deterministic}')
+            set_random_seed(seed[index_iter], deterministic=args.deterministic)
+        cfg.seed = seed[index_iter]
+        meta['seed'] = seed[index_iter]
 
-    # for index_
-    model = build_classifier(cfg.model)
-    model.init_weights()
-    base_dataset = build_dataset(cfg.data.train)
-    datasets = [base_dataset.train_dataset]
-    if len(cfg.workflow) == 2:
-        datasets.append(base_dataset.val_dataset)
-    if cfg.checkpoint_config is not None:
-        cfg.checkpoint_config.meta = dict(
-            mmhyperspectral_version=__version__,
-            config=cfg.pretty_text,
-            CLASSES=datasets[0].CLASSES)
+        model = build_classifier(cfg.model)
+        model.init_weights()
+        base_dataset = build_dataset(cfg.data.train)
+        datasets = [base_dataset.train_dataset]
+        if len(cfg.workflow) == 2:
+            datasets.append(base_dataset.val_dataset)
+        if cfg.checkpoint_config is not None:
+            cfg.checkpoint_config.meta = dict(
+                mmhyperspectral_version=__version__,
+                config=cfg.pretty_text,
+                CLASSES=datasets[0].CLASSES)
 
-    # add an attribute for visualization convenience
-    train_model(
-        model,
-        datasets,
-        cfg,
-        distributed=distributed,
-        validate=(not args.no_validate),
-        timestamp=timestamp,
-        device='cpu' if args.device == 'cpu' else 'cuda',
-        meta=meta)
+        # add an attribute for visualization convenience
+        train_model(
+            model,
+            datasets,
+            cfg,
+            distributed=distributed,
+            validate=(not args.no_validate),
+            timestamp=timestamp,
+            device='cpu' if args.device == 'cpu' else 'cuda',
+            meta=meta)
 
-    # 加载模型来处理，把test的方法加载到这里来处理，不用把数据存储一份，
-    pass
+        # 加载模型来处理，把test的方法加载到这里来处理
+        test_dataset = base_dataset.test_dataset
+        total_dataset = base_dataset.dataset
+        total_indexes = base_dataset.dataset.total_indexes
 
-record_output()
-
-
+        test_model(
+            model,
+            test_dataset,
+            total_dataset,
+            total_indexes,
+            cfg)
 
 
 if __name__ == '__main__':

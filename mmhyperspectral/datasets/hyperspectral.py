@@ -76,5 +76,7 @@ class HyperSpectral:
     def dataset(self, hsi_data):
         hsi = hsi_data.get('hsi', None)
         gt_hsi = hsi_data.get('gt_hsi', None)
+        total_indexes = hsi_data.get('total_indexes', None)
         dataset = BaseDataset(hsi, gt_hsi)
+        dataset.total_indexes = total_indexes
         return dataset

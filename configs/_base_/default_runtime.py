@@ -1,11 +1,11 @@
 # checkpoint saving
-checkpoint_config = dict(interval=10)
+checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
     interval=1,
     hooks=[
         dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook')
+        dict(type='TensorboardLoggerHook')
     ])
 # yapf:enable
 
@@ -13,4 +13,5 @@ dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
 resume_from = None
-workflow = [('train', 2), ('test', 1)]
+workflow = [('train', 1), ('val', 1)]
+iter = 4
