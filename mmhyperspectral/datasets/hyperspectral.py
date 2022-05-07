@@ -70,7 +70,9 @@ class HyperSpectral:
     def test_dataset(self, test_data):
         test_hsi = test_data.get('test_hsi', None)
         gt_test = test_data.get('gt_test', None)
+        test_indexes = test_data.get('test_indexes', None)
         test_dataset = BaseDataset(test_hsi, gt_test)
+        test_dataset.test_indexes = test_indexes
         return test_dataset
 
     def dataset(self, hsi_data):

@@ -5,7 +5,7 @@ import os.path as osp
 import time
 
 import torch
-
+import numpy as np
 import mmcv
 from mmcv import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
@@ -119,7 +119,9 @@ def main():
     logger.info(f'Distributed training: {distributed}')
     logger.info(f'Config:\n{cfg.pretty_text}')
 
-    seed = [seed_value for seed_value in range(args.seed, args.seed + args.iter)]
+    KAPPA,OA,AA = [],[],[]
+    ELEMENT_ACC = np.zeros((cfg.iter,))
+    seed = [seed_value for seed_value in range(args.seed, args.seed + cfg.iter)]
     for index_iter in range(cfg.iter):
         # set random seeds
         if seed[index_iter] is not None:
@@ -155,14 +157,18 @@ def main():
         # 加载模型来处理，把test的方法加载到这里来处理
         test_dataset = base_dataset.test_dataset
         total_dataset = base_dataset.dataset
-        total_indexes = base_dataset.dataset.total_indexes
+        test_indexes = test_dataset.test_indexes
+        total_indexes = total_dataset.total_indexes
 
-        test_model(
+        overall_acc, average_acc, kappa = test_model(
             model,
             test_dataset,
             total_dataset,
+            test_indexes,
             total_indexes,
             cfg)
+
+
 
 
 if __name__ == '__main__':

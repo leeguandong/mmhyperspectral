@@ -1,5 +1,6 @@
 from numbers import Number
-
+from operator import truediv
+from sklearn.metrics import accuracy_score, confusion_matrix, cohen_kappa_score
 import numpy as np
 import torch
 
@@ -76,12 +77,12 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
         pred = pred.numpy()
     if isinstance(target, torch.Tensor):
         target = target.numpy()
-    assert (isinstance(pred, np.ndarray) and isinstance(target, np.ndarray)),\
+    assert (isinstance(pred, np.ndarray) and isinstance(target, np.ndarray)), \
         (f'pred and target should be torch.Tensor or np.ndarray, '
          f'but got {type(pred)} and {type(target)}.')
 
     if isinstance(thrs, Number):
-        thrs = (thrs, )
+        thrs = (thrs,)
         return_single = True
     elif isinstance(thrs, tuple):
         return_single = False
@@ -245,3 +246,11 @@ def support(pred, target, average_mode='macro'):
         else:
             raise ValueError(f'Unsupport type of averaging {average_mode}.')
     return res
+
+
+def aa_and_each_accuracy(confusion_matrix):
+    list_diag = np.diag(confusion_matrix)
+    list_raw_sum = np.sum(confusion_matrix, axis=1)
+    each_acc = np.nan_to_num(truediv(list_diag, list_raw_sum))
+    average_acc = np.mean(each_acc)
+    return each_acc, average_acc

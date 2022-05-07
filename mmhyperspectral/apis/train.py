@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
 import warnings
+import collections
 
 import numpy as np
 import torch
@@ -10,7 +11,8 @@ from mmcv.runner import (load_checkpoint, DistSamplerSeedHook, Fp16OptimizerHook
                          build_optimizer, build_runner, get_dist_info)
 from mmcv.runner.hooks import DistEvalHook, EvalHook
 
-from mmhyperspectral.core import DistOptimizerHook
+from mmhyperspectral.core import DistOptimizerHook, aa_and_each_accuracy, accuracy_score, confusion_matrix, \
+    cohen_kappa_score
 from mmhyperspectral.datasets import build_dataloader, build_dataset
 from mmhyperspectral.utils import get_root_logger
 
@@ -186,6 +188,7 @@ def train_model(model,
 def test_model(model,
                test_dataset,
                total_dataset,
+               test_indexes,
                total_indexes,
                cfg):
     checkpoint = load_checkpoint(model, cfg.work_dir + 'latest.pth', map_location='cpu')
@@ -209,3 +212,18 @@ def test_model(model,
         for hsi, gt in data_loaders[0]:
             model.eval()
             pred = model(hsi)
+            pred_test.extend(np.array(pred.cpu().argmax(axis=1)))
+
+    for pipeline in cfg.data.train.pipeline:
+        if pipeline.type == 'Sampling':
+            ratio = pipeline.ratio
+            break
+
+    collections.Counter(pred_test)
+    gt_test = gt[test_indexes] - 1
+    overall_acc = accuracy_score(pred_test, gt_test[:-int(len(total_indexes * ratio))])
+    confusion_matrix_ = confusion_matrix(pred_test, gt_test[:-int(len(total_indexes * ratio))])
+    each_acc, average_acc = aa_and_each_accuracy(confusion_matrix_)
+    kappa = cohen_kappa_score(pred_test, gt_test[:-int(len(total_indexes * ratio))])
+
+    return overall_acc, average_acc, kappa

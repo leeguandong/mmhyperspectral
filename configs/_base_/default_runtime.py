@@ -14,4 +14,4 @@ log_level = 'INFO'
 load_from = None
 resume_from = None
 workflow = [('train', 1), ('val', 1)]
-iter = 4
+iter = 4  # 多跑几遍，相当于乘上个epoch

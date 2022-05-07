@@ -66,7 +66,8 @@ class ExtractPatch:
         gt_hsi = torch.from_numpy(gt_hsi).type(torch.FloatTensor)
 
         return {'train_hsi': train_hsi, 'gt_train': gt_train}, {'val_hsi': val_hsi, 'gt_val': gt_val}, {
-            'test_hsi': test_hsi, 'gt_test': gt_test}, {'hsi': hsi_, 'gt_hsi': gt_hsi, 'total_indexes': total_indexes}
+            'test_hsi': test_hsi, 'gt_test': gt_test, 'test_indexes': test_indexes}, \
+               {'hsi': hsi_, 'gt_hsi': gt_hsi, 'total_indexes': total_indexes}
 
     def __repr__(self):
         return self.__class__.__name__
