@@ -67,7 +67,7 @@ class ExtractPatch:
 
         return {'train_hsi': train_hsi, 'gt_train': gt_train}, {'val_hsi': val_hsi, 'gt_val': gt_val}, {
             'test_hsi': test_hsi, 'gt_test': gt_test, 'test_indexes': test_indexes}, \
-               {'hsi': hsi_, 'gt_hsi': gt_hsi, 'total_indexes': total_indexes}
+               {'hsi': hsi_, 'gt_hsi': gt_hsi, 'total_indexes': total_indexes, 'gt': gt_}
 
     def __repr__(self):
         return self.__class__.__name__

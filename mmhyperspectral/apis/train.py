@@ -187,43 +187,42 @@ def train_model(model,
 
 def test_model(model,
                test_dataset,
-               total_dataset,
                test_indexes,
                total_indexes,
-               cfg):
-    checkpoint = load_checkpoint(model, cfg.work_dir + 'latest.pth', map_location='cpu')
+               gt,
+               cfg=None,
+               device=None):
+    gt_hsi = gt.reshape(np.prod(gt.shape[:2]), )
+    _ = load_checkpoint(model, cfg.work_dir + '/latest.pth', map_location=device)
+    model.eval()
 
-    dataset = [test_dataset, total_dataset]
+    data_loaders = build_dataloader(
+        test_dataset,
+        cfg.data.samples_per_gpu,
+        cfg.data.workers_per_gpu,
+        num_gpus=len(cfg.gpu_ids),
+        dist=False,
+        round_up=True,
+        seed=cfg.seed)
 
-    data_loaders = [
-        build_dataloader(
-            ds,
-            cfg.data.samples_per_gpu,
-            cfg.data.workers_per_gpu,
-            # cfg.gpus will be ignored if distributed
-            num_gpus=len(cfg.gpu_ids),
-            dist=False,
-            round_up=True,
-            seed=cfg.seed) for ds in dataset
-        ]
-
-    pred_test = []
-    with torch.no_grad():
-        for hsi, gt in data_loaders[0]:
-            model.eval()
-            pred = model(hsi)
-            pred_test.extend(np.array(pred.cpu().argmax(axis=1)))
+    results = []
+    for i, data in enumerate(data_loaders):
+        with torch.no_grad():
+            result = model(return_loss=False, **data)
+            # results.extend(np.array(result.cpu().argmax(axis=1)))
+            results.extend(result)
+    pred_label = np.argmax(np.vstack(results), axis=1)
 
     for pipeline in cfg.data.train.pipeline:
         if pipeline.type == 'Sampling':
             ratio = pipeline.ratio
             break
 
-    collections.Counter(pred_test)
-    gt_test = gt[test_indexes] - 1
-    overall_acc = accuracy_score(pred_test, gt_test[:-int(len(total_indexes * ratio))])
-    confusion_matrix_ = confusion_matrix(pred_test, gt_test[:-int(len(total_indexes * ratio))])
+    collections.Counter(pred_label)
+    gt_test = gt_hsi[test_indexes] - 1
+    overall_acc = accuracy_score(pred_label, gt_test[:-int(len(total_indexes) * ratio)])
+    confusion_matrix_ = confusion_matrix(pred_label, gt_test[:-int(len(total_indexes) * ratio)])
     each_acc, average_acc = aa_and_each_accuracy(confusion_matrix_)
-    kappa = cohen_kappa_score(pred_test, gt_test[:-int(len(total_indexes * ratio))])
+    kappa = cohen_kappa_score(pred_label, gt_test[:-int(len(total_indexes) * ratio)])
 
-    return overall_acc, average_acc, kappa
+    return overall_acc, average_acc, kappa, each_acc

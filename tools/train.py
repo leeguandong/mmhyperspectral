@@ -1,5 +1,4 @@
 import argparse
-import copy
 import os
 import os.path as osp
 import time
@@ -119,8 +118,7 @@ def main():
     logger.info(f'Distributed training: {distributed}')
     logger.info(f'Config:\n{cfg.pretty_text}')
 
-    KAPPA,OA,AA = [],[],[]
-    ELEMENT_ACC = np.zeros((cfg.iter,))
+    KAPPA, OA, AA, ELEMENT_ACC = [], [], [], []
     seed = [seed_value for seed_value in range(args.seed, args.seed + cfg.iter)]
     for index_iter in range(cfg.iter):
         # set random seeds
@@ -156,19 +154,32 @@ def main():
 
         # 加载模型来处理，把test的方法加载到这里来处理
         test_dataset = base_dataset.test_dataset
-        total_dataset = base_dataset.dataset
         test_indexes = test_dataset.test_indexes
-        total_indexes = total_dataset.total_indexes
+        total_indexes = base_dataset.dataset.total_indexes
+        gt = base_dataset.dataset.gt
 
-        overall_acc, average_acc, kappa = test_model(
-            model,
-            test_dataset,
-            total_dataset,
-            test_indexes,
-            total_indexes,
-            cfg)
+        overall_acc, average_acc, kappa, each_acc = \
+            test_model(
+                model,
+                test_dataset,
+                test_indexes,
+                total_indexes,
+                gt,
+                cfg,
+                device='cpu' if args.device == 'cpu' else 'cuda')
+        KAPPA.append(kappa)
+        OA.append(overall_acc)
+        AA.append(average_acc)
+        ELEMENT_ACC.append(each_acc)
 
-
+    logger.info(f'OAs for each iteration are:{OA}')
+    logger.info(f'AAs for each iteration are:{AA}')
+    logger.info(f'KAPPAs for each iteration are:{KAPPA}')
+    logger.info(f'mean_OA ± std_OA is: {str(np.mean(OA))}±{str(np.std(OA))}')
+    logger.info(f'mean_AA ± std_AA is:{str(np.mean(AA))}±{str(np.std(OA))} ')
+    logger.info(f'mean_KAPPA ± std_KAPPA is:{str(np.mean(KAPPA))}±{str(np.std(KAPPA))}')
+    logger.info(f'Mean of all elements in confusion matrix:{str(np.mean(ELEMENT_ACC,axis=0))}')
+    logger.info(f'"Standard deviation of all elements in confusion matrix: {str(np.std(ELEMENT_ACC,axis=0))}"')
 
 
 if __name__ == '__main__':

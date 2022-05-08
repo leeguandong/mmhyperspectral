@@ -27,9 +27,9 @@ class Pad:
 
     def __call__(self, data_infos):
         hsi = data_infos.get('hsi', None)
-        gt = data_infos.get('gt', None)
-        pad_hsi = np.lib.pad(hsi, ((self.patch, self.patch), (self.patch, self.patch),
-                                   (0, 0)), 'constant', constant_values=0)
+        # gt = data_infos.get('gt', None)
+        pad_hsi = np.lib.pad(hsi, (
+            (self.patch, self.patch), (self.patch, self.patch), (0, 0)), 'constant', constant_values=0)
         data_infos.update({'pad_hsi': pad_hsi})
         data_infos.update({'patch': self.patch})
         return data_infos
