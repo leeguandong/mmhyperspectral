@@ -51,7 +51,6 @@ def main():
         round_up=True)
 
     model = build_classifier(cfg.model)
-    model.eval()
 
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
@@ -59,17 +58,18 @@ def main():
     _ = load_checkpoint(model, args.checkpoint, map_location=args.device)
 
     results = []
+    model.eval()
     with torch.no_grad():
         for i, data in enumerate(data_loader):
             result = model(return_loss=False, **data)
             results.extend(result)
     pred_label = np.argmax(np.vstack(results), axis=1)
 
-    for i in range(len(gt)):
-        if gt[i] == 0:
-            gt[i] = 17
-            hsi_label[i] = 16
-    gt = gt[:] - 1
+    # for i in range(len(gt)):
+    #     if gt[i] == 0:
+    #         gt[i] = 17
+    #         hsi_label[i] = 16`
+    # gt = gt[:] - 1
     hsi_label[total_indexes] = pred_label
     pred = np.ravel(hsi_label)
 
@@ -78,10 +78,10 @@ def main():
     pred_list = np.reshape(pred_list, (gt_hsi.shape[0], gt_hsi.shape[1], 3))
     gt = np.reshape(gt, (gt_hsi.shape[0], gt_hsi.shape[1], 3))
 
-    classification_map(pred_list, gt_hsi, 300,
-                       args.out + '/' + Path(args.config).stem + '.png')
-    classification_map(gt, gt_hsi, 300,
-                       args.out + '/' + Path(args.config).stem + '_gt.png')
+    classification_map(
+        pred_list, gt_hsi, 300, args.out + '/' + Path(args.config).stem + '.png')
+    classification_map(
+        gt, gt_hsi, 300, args.out + '/' + Path(args.config).stem + '_gt.png')
 
 
 if __name__ == "__main__":

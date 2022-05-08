@@ -16,8 +16,8 @@ data = dict(
     train=dict(
         type=dataset_type,
         manner='IN',
-        data_prefix='G:/git_leeguandong/mmhyperspectral/data/IN/Indian_pines_corrected.mat',
-        data_gt='G:/git_leeguandong/mmhyperspectral/data/IN/Indian_pines_gt.mat',
+        data_prefix='../data/IN/Indian_pines_corrected.mat',
+        data_gt='../data/IN/Indian_pines_gt.mat',
         pipeline=train_pipeline))
 
 evaluation = dict(interval=1, metric='accuracy')

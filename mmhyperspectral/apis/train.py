@@ -209,7 +209,6 @@ def test_model(model,
     for i, data in enumerate(data_loaders):
         with torch.no_grad():
             result = model(return_loss=False, **data)
-            # results.extend(np.array(result.cpu().argmax(axis=1)))
             results.extend(result)
     pred_label = np.argmax(np.vstack(results), axis=1)
 
